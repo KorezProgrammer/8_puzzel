@@ -1,55 +1,73 @@
 #include <iostream>
 #include <conio.h>
 #include <ctime>
+#include <vector>
 
 #define cout std::cout
+#define cin std::cin
 #define string std::string
 
-void printTableWithLines(const char arr[3][3]) 
+void printTableWithLines(const std::vector<std::vector<char>>& arr, int size)
 {
-    cout << "+---+---+---+\n";
-    for (int i = 0; i < 3; i++) 
+    for (int i = 0; i < size; i++)
     {
-        for (int j = 0; j < 3; j++) 
+        cout << "+";
+        for (int j = 0; j < size; j++)
         {
-            cout << "| " << arr[i][j] << " ";
+            cout << "---+";
         }
-        cout << "|\n+---+---+---+\n";
+        cout << "\n|";
+        for (int j = 0; j < size; j++)
+        {
+            cout << " " << arr[i][j] << " |";
+        }
+        cout << "\n";
     }
+    cout << "+";
+    for (int j = 0; j < size; j++)
+    {
+        cout << "---+";
+    }
+    cout << "\n";
 }
 
-bool checkGoal(const char arr[3][3], const char goal[3][3]) 
+bool checkGoal(const std::vector<std::vector<char>>& arr, const std::vector<std::vector<char>>& goal, const std::vector<std::vector<char>>& reverseGoal, int size)
 {
-    for (int i = 0; i < 3; i++) 
+    bool normalGoal = true, reverseGoalAchieved = true;
+
+    for (int i = 0; i < size; i++)
     {
-        for (int j = 0; j < 3; j++) 
+        for (int j = 0; j < size; j++)
         {
             if (arr[i][j] != goal[i][j])
-                return false;
+                normalGoal = false;
+            if (arr[i][j] != reverseGoal[i][j])
+                reverseGoalAchieved = false;
         }
     }
-    return true;
+
+    return normalGoal || reverseGoalAchieved;
 }
 
-bool isSolvable(const char arr[3][3]) 
+bool isSolvable(const std::vector<std::vector<char>>& arr, int size)
 {
     int invCount = 0;
-    char flat[9];
-    int k = 0;
+    std::vector<char> flat;
 
-    for (int i = 0; i < 3; i++) 
+    for (int i = 0; i < size; i++)
     {
-        for (int j = 0; j < 3; j++) 
+        for (int j = 0; j < size; j++)
         {
-            flat[k++] = arr[i][j];
+            if (arr[i][j] != ' ')
+                flat.push_back(arr[i][j]);
         }
     }
 
-    for (int i = 0; i < 9; i++) 
+    for (size_t i = 0; i < flat.size(); i++)
     {
-        for (int j = i + 1; j < 9; j++) 
+        for (size_t j = i + 1; j < flat.size(); j++)
         {
-            if (flat[i] != ' ' && flat[j] != ' ' && flat[i] > flat[j]) 
+            if (flat[i] > flat[j])
             {
                 invCount++;
             }
@@ -58,90 +76,95 @@ bool isSolvable(const char arr[3][3])
     return (invCount % 2 == 0);
 }
 
-void shufflePuzzle(char arr[3][3]) 
+void shufflePuzzle(std::vector<std::vector<char>>& arr, int size)
 {
-    string numbers = "12345678 ";
-    srand(time(0));  // Seed the random number generator
-    do 
+    srand(static_cast<unsigned int>(time(0)));  // Seed the random number generator
+    do
     {
-        for (int i = 0; i < 9; i++) 
+        for (int i = 0; i < size * size; i++)
         {
-            int x1 = rand() % 3, y1 = rand() % 3;
-            int x2 = rand() % 3, y2 = rand() % 3;
+            int x1 = rand() % size, y1 = rand() % size;
+            int x2 = rand() % size, y2 = rand() % size;
             std::swap(arr[x1][y1], arr[x2][y2]);
         }
-    } while (!isSolvable(arr));
+    } while (!isSolvable(arr, size));
 }
 
-bool moveTile(char arr[3][3], int& x, int& y, int dx, int dy) 
-{
-    int newX = x + dx;
-    int newY = y + dy;
-
-    if (newX >= 0 && newX < 3 && newY >= 0 && newY < 3) 
-    {
-        // Move the number into the empty space
-        std::swap(arr[newX][newY], arr[x][y]);
-        x = newX;
-        y = newY;
-        return true;
-    }
-    return false;
-}
-
-void printNeighbors(const char arr[3][3], int emptyX, int emptyY) 
+void printNeighbors(const std::vector<std::vector<char>>& arr, int emptyX, int emptyY, int size)
 {
     cout << "Existing operations:";
-    // Check and print left
     if (emptyY > 0)
-        cout << " Right: " << arr[emptyX][emptyY - 1] << "|";
-
-    // Check and print right
-    if (emptyY < 2)
-        cout << " Left: " << arr[emptyX][emptyY + 1] << "|";
-
-    // Check and print up
+        cout << " Right: " << arr[emptyX][static_cast<std::vector<char, std::allocator<char>>::size_type>(emptyY) - 1] << "|";
+    if (emptyY < size - 1)
+        cout << " Left: " << arr[emptyX][static_cast<std::vector<char, std::allocator<char>>::size_type>(emptyY) + 1] << "|";
     if (emptyX > 0)
-        cout << " Down: " << arr[emptyX - 1][emptyY] << "|";
-
-    // Check and print down
-    if (emptyX < 2)
-        cout << " Up: " << arr[emptyX + 1][emptyY] << "|";
+        cout << " Down: " << arr[static_cast<std::vector<char, std::allocator<char>>::size_type>(emptyX) - 1][emptyY] << "|";
+    if (emptyX < size - 1)
+        cout << " Up: " << arr[static_cast<std::vector<char, std::allocator<char>>::size_type>(emptyX) + 1][emptyY] << "|";
 }
 
-int main() {
-    string numbers = "12345678 ";
-    char start[3][3] = 
+int main()
+{
+    cout << "Enter the size of the puzzle (e.g., 3 for 3x3): ";
+    int size = 0;
+    cin >> size;
+    std::vector<std::vector<char>> start(size, std::vector<char>(size));
+    std::vector<std::vector<char>> goal(size, std::vector<char>(size));
+    std::vector<std::vector<char>> reverseGoal(size, std::vector<char>(size));
+    string numbers = "123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ";
+    int totalElements = size * size;
+    int k = 0;
+    int z = totalElements - 2;
+    int emptyX, emptyY;
+    char cOperator = 0;
+    int control = 0;
+
+    while (size <= 2 || size % 2 == 0)
     {
-        {numbers[0], numbers[1], numbers[2]},
-        {numbers[3], numbers[4], numbers[5]},
-        {numbers[6], numbers[7], numbers[8]}
-    };
-
-    const char goal1[3][3] = 
+        cout << "The number must be odd and bigger than 2. Please enter again: ";
+        cin >> size;
+    }
+    if (size == 5)
     {
-        {numbers[0], numbers[1], numbers[2]},
-        {numbers[3], numbers[4], numbers[5]},
-        {numbers[6], numbers[7], numbers[8]}
-    };
-
-    const char goal2[3][3] = 
+        cout << "\nNumbers > Letters\n";
+    }
+    else if (size == 7)
     {
-        {numbers[7], numbers[6], numbers[5]},
-        {numbers[4], numbers[3], numbers[2]},
-        {numbers[1], numbers[0], numbers[8]}
-    };
+        cout << "\nNumbers > Capital letters > Lowercase letters\n";
+    }
 
-    shufflePuzzle(start);
-
-    int emptyX = 0, emptyY = 0;
-
-    // Find the initial empty space position
-    for (int i = 0; i < 3; i++) 
+    if (totalElements > numbers.size())
     {
-        for (int j = 0; j < 3; j++) 
+        cout << "Error: Puzzle size too large!";
+        return -1;
+    }
+
+    // Initialize goal and reverseGoal
+    for (int i = 0; i < size; i++)
+    {
+        for (int j = 0; j < size; j++)
         {
-            if (start[i][j] == ' ') 
+            if (i == size - 1 && j == size - 1) 
+            {
+                reverseGoal[i][j] = ' ';
+            }
+            else 
+            {
+                reverseGoal[i][j] = numbers[z--];
+            }
+            goal[i][j] = numbers[k++];
+        }
+    }
+    goal[static_cast<std::vector<char, std::allocator<char>>::size_type>(size) - 1][static_cast<std::vector<char, std::allocator<char>>::size_type>(size) - 1] = ' ';
+
+    // Shuffle the start state
+    start = goal;
+    shufflePuzzle(start, size);
+    for (int i = 0; i < size; i++)
+    {
+        for (int j = 0; j < size; j++)
+        {
+            if (start[i][j] == ' ')
             {
                 emptyX = i;
                 emptyY = j;
@@ -149,77 +172,67 @@ int main() {
         }
     }
 
-    cout << "Start state:\n";
-    printTableWithLines(start);
+    cout << "\nStart state:\n";
+    printTableWithLines(start, size);
     cout << "Use arrow keys to move (Esc to exit):\n";
-    printNeighbors(start, emptyX, emptyY);
+    printNeighbors(start, emptyX, emptyY, size);
+    cout << "\n";
 
-    char cOperator = 0;
-    int control = 0;
-
-    while (cOperator != 27) 
+    while (cOperator != 27)
     {
-        if (checkGoal(start, goal1) || checkGoal(start, goal2)) 
+        if (checkGoal(start, goal, reverseGoal, size))
         {
             cout << "\nPuzzle solved! :) Total moves: " << control << "\n";
             break;
         }
 
-        if (_kbhit()) 
+        if (_kbhit())
         {
             cOperator = _getch();
 
-            // Move number down into empty space (if the empty space is not in the last row)
-            if (cOperator == 80 && emptyX > 0) 
+            if (cOperator == 80 && emptyX > 0)
             {
-                cout << "\n\ndown array\n";
-                std::swap(start[emptyX - 1][emptyY], start[emptyX][emptyY]);
+                cout << "\nDown arrow";
+                std::swap(start[static_cast<std::vector<char, std::allocator<char>>::size_type>(emptyX)-1][emptyY], start[emptyX][emptyY]);
                 emptyX--;
                 control++;
-                cout << "Total moves: " << control << "\n";
-
-                printNeighbors(start, emptyX, emptyY);
+                cout << "\nTotal moves: " << control << "\n";
+                printNeighbors(start, emptyX, emptyY, size);
                 cout << "\n";
-                printTableWithLines(start);
+                printTableWithLines(start, size);
             }
-            // Move number up into empty space (if the empty space is not in the first row)
-            else if (cOperator == 72 && emptyX < 2) 
+            else if (cOperator == 72 && emptyX < size - 1)
             {
-                cout << "\n\nup array\n";
-                std::swap(start[emptyX + 1][emptyY], start[emptyX][emptyY]);
+                cout << "\nUp arrow";
+                std::swap(start[static_cast<std::vector<char, std::allocator<char>>::size_type>(emptyX)+1][emptyY], start[emptyX][emptyY]);
                 emptyX++;
                 control++;
-                cout << "Total moves: " << control << "\n";
-
-                printNeighbors(start, emptyX, emptyY);
+                cout << "\nTotal moves: " << control << "\n";
+                printNeighbors(start, emptyX, emptyY, size);
                 cout << "\n";
-                printTableWithLines(start);
+                printTableWithLines(start, size);
             }
-            // Move number left into empty space (if the empty space is not in the first column)
-            else if (cOperator == 75 && emptyY < 2) 
+            else if (cOperator == 75 && emptyY < size - 1)
             {
-                cout << "\n\nleft array\n";
-                std::swap(start[emptyX][emptyY + 1], start[emptyX][emptyY]);
+                cout << "\nLeft arrow";
+                std::swap(start[emptyX][static_cast<std::vector<char, std::allocator<char>>::size_type>(emptyY)+1], start[emptyX][emptyY]);
                 emptyY++;
                 control++;
-                cout << "Total moves: " << control << "\n";
-
-                printNeighbors(start, emptyX, emptyY);
+                cout << "\nTotal moves: " << control << "\n";
+                printNeighbors(start, emptyX, emptyY, size);
                 cout << "\n";
-                printTableWithLines(start);
+                printTableWithLines(start, size);
             }
-            // Move number right into empty space (if the empty space is not in the last column)
-            else if (cOperator == 77 && emptyY > 0) 
+            else if (cOperator == 77 && emptyY > 0)
             {
-                cout << "\n\nright array\n";
-                std::swap(start[emptyX][emptyY - 1], start[emptyX][emptyY]);
+                cout << "\nRight arrow";
+                std::swap(start[emptyX][static_cast<std::vector<char, std::allocator<char>>::size_type>(emptyY)-1], start[emptyX][emptyY]);
                 emptyY--;
                 control++;
-                cout << "Total moves: " << control << "\n";
-
-                printNeighbors(start, emptyX, emptyY);
+                cout << "\nTotal moves: " << control << "\n";
+                printNeighbors(start, emptyX, emptyY, size);
                 cout << "\n";
-                printTableWithLines(start);
+                printTableWithLines(start, size);
             }
         }
     }
